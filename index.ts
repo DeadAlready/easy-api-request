@@ -22,11 +22,6 @@ function RequestWrap(config) {
     }
 }
 
-interface InputOptions {
-    name: any;
-    config: any;
-}
-
-export function create(opts: InputOptions) {
+export function create(opts: {name: any; config: {url:string; internal?:boolean; headers?: string[]; cookies?: string[]; replyCookies?: string[]; jSend?: boolean; opts?: Object }}) {
     express.request[opts.name] = RequestWrap(opts.config);
 }

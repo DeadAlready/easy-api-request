@@ -8,11 +8,6 @@ import mockLogger = require('./mock-logger');
 import request = require('request');
 import Q = require('q');
 
-interface _RequestInterface {
-    opts:Object;
-    cb?:(err:any, data?:any) => void
-}
-
 class Request {
     private base;
     private req;
@@ -130,7 +125,7 @@ class Request {
         return this._request(opts);
     }
     // Create a request
-    _request(opts:_RequestInterface):void | Q.IPromise<any> {
+    _request(opts:{opts:Object;cb?:(err:any, data?:any) => void}):void | Q.IPromise<any> {
         var requestOpts = opts.opts;
         var cb = opts.cb;
         if(this.stream) {
