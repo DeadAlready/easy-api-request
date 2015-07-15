@@ -8,16 +8,23 @@
 
 var express = require('express');
 
-import Request = require('./lib/request');
+import CBPromiseRequest = require('./lib/cb-promise-request');
+import StreamRequest = require('./lib/stream-request');
 
 function RequestWrap(config) {
-    return function getRequest(stream:boolean = false): Request {
+    return function getRequest(stream:boolean = false): StreamRequest | CBPromiseRequest {
         var $this = this;
 
-        return new Request({
+        if(stream) {
+            return new StreamRequest({
+                req: $this,
+                config: config
+            });
+        }
+
+        return new CBPromiseRequest({
             req: $this,
-            config: config,
-            stream: !!stream
+            config: config
         });
     }
 }

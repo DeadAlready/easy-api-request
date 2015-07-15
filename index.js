@@ -4,15 +4,21 @@
 /// <reference path="typings/tsd.d.ts" />
 'use strict';
 var express = require('express');
-var Request = require('./lib/request');
+var CBPromiseRequest = require('./lib/cb-promise-request');
+var StreamRequest = require('./lib/stream-request');
 function RequestWrap(config) {
     return function getRequest(stream) {
         if (stream === void 0) { stream = false; }
         var $this = this;
-        return new Request({
+        if (stream) {
+            return new StreamRequest({
+                req: $this,
+                config: config
+            });
+        }
+        return new CBPromiseRequest({
             req: $this,
-            config: config,
-            stream: !!stream
+            config: config
         });
     };
 }
