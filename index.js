@@ -3,7 +3,7 @@
  */
 /// <reference path="typings/tsd.d.ts" />
 'use strict';
-var express = require('express');
+var e = require('express');
 var CBPromiseRequest = require('./lib/cb-promise-request');
 var StreamRequest = require('./lib/stream-request');
 function RequestWrap(config) {
@@ -23,6 +23,7 @@ function RequestWrap(config) {
     };
 }
 function create(opts) {
+    var express = opts.express || e;
     express.request[opts.name] = RequestWrap(opts.config);
 }
 exports.create = create;

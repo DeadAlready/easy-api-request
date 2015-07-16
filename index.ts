@@ -6,7 +6,7 @@
 
 'use strict';
 
-var express = require('express');
+var e = require('express');
 
 import CBPromiseRequest = require('./lib/cb-promise-request');
 import StreamRequest = require('./lib/stream-request');
@@ -29,6 +29,22 @@ function RequestWrap(config) {
     }
 }
 
-export function create(opts: {name: any; config: {url:string; internal?:boolean; headers?: string[]; cookies?: string[]; replyCookies?: string[]; jSend?: boolean; opts?: Object }}) {
+interface Config {
+    name: any;
+    config: {
+        url:string;
+        internal?:boolean;
+        headers?: string[];
+        cookies?: string[];
+        replyCookies?: string[];
+        jSend?: boolean;
+        opts?: Object
+    };
+    express?: any;
+}
+
+export function create(opts: Config) {
+    var express = opts.express || e;
+
     express.request[opts.name] = RequestWrap(opts.config);
 }
