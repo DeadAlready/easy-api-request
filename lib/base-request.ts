@@ -41,7 +41,7 @@ export class BaseRequest {
         // If internal then forward all x- headers
         if(config.internal) {
             Object.keys($this.req.headers).forEach(function (header) {
-                if(header.indexOf('x-') === -1 && !headers[header]) {
+                if(header.indexOf('x-') !== -1 && !headers[header]) {
                     headers[header] = $this.req.headers[header];
                 }
             });
