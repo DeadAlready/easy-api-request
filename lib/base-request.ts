@@ -31,7 +31,9 @@ export class BaseRequest {
         }
 
         // Join headers
-        var headers:any = {};
+        var headers:any = {
+            accept: 'application/json'
+        };
         sendHeaders.forEach(function (header){
             if($this.req.headers[header]) {
                 headers[header] = $this.req.headers[header];
@@ -78,6 +80,7 @@ export class BaseRequest {
         // Attach defaults
         options.baseUrl = config.url;
         options.headers = headers;
+        options.gzip = true;
 
         $this.base = request.defaults(options);
     }
