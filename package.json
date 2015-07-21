@@ -1,6 +1,6 @@
 {
   "name": "easy-api-request",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Request wrapper providing cookie and header forwarding",
   "main": "index.js",
   "scripts": {

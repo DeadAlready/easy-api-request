@@ -151,6 +151,9 @@ export class BaseRequest {
             }
             $this.log.info({data: body.data}, 'API call ended with success');
             resp.data = body.data;
+        } else if(response.statusCode >= 400) {
+            $this.log.warn({body: body}, 'API call responded with non success status code');
+            resp.err = body;
         }
         return resp;
     }
