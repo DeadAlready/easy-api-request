@@ -8,6 +8,26 @@ import mockLogger = require('./mock-logger');
 import request = require('request');
 import http = require('http');
 
+var mask = /("password":|"cc":)(.+?)([,}])/g;
+
+function clone(data) {
+    return JSON.parse(JSON.stringify(data));
+}
+
+var mask = /("password":|"cc":)(.+?)([,}])/g;
+
+function cleanLogData(data) {
+    try {
+        var clean = JSON.stringify(data);
+    } catch(ignore) {
+        return data;
+    }
+
+    clean = clean.replace(mask, '$1"******"$3');
+
+    return JSON.parse(clean);
+}
+
 export class BaseRequest {
     protected base;
     protected req;
@@ -15,6 +35,7 @@ export class BaseRequest {
     protected replyCookies: string[];
     protected stream:boolean = false;
     protected jSend:boolean = true;
+    protected cleanLogData:Function;
     constructor(opts) {
         var config = opts.config;
         var $this = this;
@@ -22,6 +43,7 @@ export class BaseRequest {
         $this.req = opts.req;
         $this.stream = opts.stream;
         $this.log = $this.req.log || mockLogger;
+        $this.cleanLogData = opts.cleanLogData || cleanLogData;
         $this.replyCookies = config.replyCookies || [];
 
         var sendHeaders = config.headers || [];
@@ -71,7 +93,7 @@ export class BaseRequest {
             options = {};
         } else {
             try {
-                options = JSON.parse(JSON.stringify(opts.config.opts));
+                options = clone(opts.config.opts);
             } catch (e) {
                 throw new TypeError('Invalid config.opts object');
             }

@@ -23,7 +23,11 @@ Configure the wrapper for a specific api
 			
 			replyCookies: [], //Cookies we want to proxy from reply
 			
-			opts: {} //Options for request.defaults
+			opts: {}, //Options for request.defaults
+			
+			cleanLogData: Function // Gets the opts object before request is made 
+			// and should return a cloned/masked object
+			// by default masks password and cc names
 		}
 	});
 

@@ -15,7 +15,7 @@ class CBPromiseRequest extends BaseRequest.BaseRequest {
     // Create a request
     _request(opts:Object, cb?:(err?:any, resp?: BaseRequest.Result) =>void): void | Q.Promise<BaseRequest.Result> {
         var $this = this;
-        $this.log.debug({opts: opts}, 'Making a request');
+        $this.log.debug({opts: $this.cleanLogData(opts)}, 'Making a request');
         if(cb) {
             return $this.base(opts, function (err, response, body) {
                 var resp = $this._parseResponse(err, response, body);
