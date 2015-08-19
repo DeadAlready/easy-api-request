@@ -7,18 +7,20 @@ var e = require('express');
 var CBPromiseRequest = require('./lib/cb-promise-request');
 var StreamRequest = require('./lib/stream-request');
 function RequestWrap(config) {
-    return function getRequest(stream) {
+    return function getRequest(stream, getBaseOpts) {
         if (stream === void 0) { stream = false; }
         var $this = this;
         if (stream) {
             return new StreamRequest({
                 req: $this,
-                config: config
+                config: config,
+                getBaseOpts: getBaseOpts
             });
         }
         return new CBPromiseRequest({
             req: $this,
-            config: config
+            config: config,
+            getBaseOpts: getBaseOpts
         });
     };
 }

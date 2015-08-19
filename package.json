@@ -1,6 +1,6 @@
 {
   "name": "easy-api-request",
-  "version": "1.0.7",
+  "version": "1.2.0",
   "description": "Request wrapper providing cookie and header forwarding",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/DeadAlready/easy-api-request",
   "dependencies": {
+    "merge": "^1.2.0",
     "q": "^1.4.1",
     "request": "^2.58.0"
   },

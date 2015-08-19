@@ -8,11 +8,7 @@ import mockLogger = require('./mock-logger');
 import request = require('request');
 import http = require('http');
 
-var mask = /("password":|"cc":)(.+?)([,}])/g;
-
-function clone(data) {
-    return JSON.parse(JSON.stringify(data));
-}
+var merge = require('merge');
 
 var mask = /("password":|"cc":)(.+?)([,}])/g;
 
@@ -93,15 +89,22 @@ export class BaseRequest {
             options = {};
         } else {
             try {
-                options = clone(opts.config.opts);
+                options = merge(true, opts.config.opts);
             } catch (e) {
                 throw new TypeError('Invalid config.opts object');
             }
         }
 
+        var baseOpts;
+        if(opts.getBaseOpts) {
+            baseOpts = opts.getBaseOpts($this.req);
+        }
+
+        merge(options, baseOpts || {});
+
         // Attach defaults
         options.baseUrl = config.url;
-        options.headers = headers;
+        options.headers = merge(options.headers || {}, headers);
         options.gzip = true;
 
         $this.base = request.defaults(options);
