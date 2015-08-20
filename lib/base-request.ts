@@ -95,12 +95,9 @@ export class BaseRequest {
             }
         }
 
-        var baseOpts;
-        if(opts.getBaseOpts) {
-            baseOpts = opts.getBaseOpts($this.req);
+        if(typeof opts.requestOpts === 'object') {
+            merge(options, opts.requestOpts);
         }
-
-        merge(options, baseOpts || {});
 
         // Attach defaults
         options.baseUrl = config.url;

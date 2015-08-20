@@ -63,15 +63,14 @@ Examples of use
     req.testAPI(true).get('/cool/path').pipe(res);
   });
   
-	// With custom requestOpts function 
+	// With custom requestOpts 
 	app.get('/', function (req, res) {
-	  req.testAPI(false, function (req) {
-      return {
-        headers: {
-          'x-custom-path': req.path
-        }
-      }
-    })
+	
+	  req.testAPI(false, {
+		headers: {
+				'x-custom-path': req.path
+			}
+		})
     .get('/cool/path')
     .then(function (resp) {
       res.json(resp);
@@ -79,7 +78,8 @@ Examples of use
     .catch(function (err) {
       res.json(err);
     });
-  });
+	});
+
 
 ## License
 

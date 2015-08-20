@@ -12,21 +12,21 @@ import CBPromiseRequest = require('./lib/cb-promise-request');
 import StreamRequest = require('./lib/stream-request');
 
 function RequestWrap(config) {
-    return function getRequest(stream:boolean = false, getBaseOpts?: Function): StreamRequest | CBPromiseRequest {
+    return function getRequest(stream:boolean = false, requestOpts?: Object): StreamRequest | CBPromiseRequest {
         var $this = this;
 
         if(stream) {
             return new StreamRequest({
                 req: $this,
                 config: config,
-                getBaseOpts: getBaseOpts
+                requestOpts: requestOpts
             });
         }
 
         return new CBPromiseRequest({
             req: $this,
             config: config,
-            getBaseOpts: getBaseOpts
+            requestOpts: requestOpts
         });
     }
 }
