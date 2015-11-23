@@ -40,7 +40,8 @@ interface Config {
         cookies?: string[];
         replyCookies?: string[];
         jSend?: boolean;
-        opts?: Object
+        opts?: Object;
+        cleanLogData?: Function;
     };
     express?: any;
 }

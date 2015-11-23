@@ -10,7 +10,7 @@ import http = require('http');
 
 var merge = require('merge');
 
-var mask = /("password":|"cc":)(.+?)([,}])/g;
+var mask = /("[^"]*?password[^"]*?":|"cc":)(.+?)([,}])/g;
 
 function cleanLogData(data) {
     try {
@@ -24,11 +24,14 @@ function cleanLogData(data) {
     return JSON.parse(clean);
 }
 
+var semiRegex = /;/g;
+var xHeaderRegex = /^x-/i;
+
 export class BaseRequest {
     protected base;
     protected req;
     protected log;
-    protected replyCookies: string[];
+    protected replyCookieRegex: any;
     protected stream:boolean = false;
     protected jSend:boolean = true;
     protected cleanLogData:Function;
@@ -39,11 +42,18 @@ export class BaseRequest {
         $this.req = opts.req;
         $this.stream = opts.stream;
         $this.log = $this.req.log || mockLogger;
-        $this.cleanLogData = opts.cleanLogData || cleanLogData;
-        $this.replyCookies = config.replyCookies || [];
+        $this.cleanLogData = config.cleanLogData || cleanLogData;
+        var replyCookies = config.replyCookies || [];
+        if(replyCookies.length) {
+            $this.replyCookieRegex = new RegExp('^(' + replyCookies.join('|') + ')=');
+        }
 
         var sendHeaders = config.headers || [];
         var sendCookies = config.cookies || [];
+        var sendCookieRegex;
+        if(sendCookies.length) {
+            sendCookieRegex = new RegExp(' (' + sendCookies.join('|') + ')=(.+?);', 'g');
+        }
         if(config.jSend !== undefined) {
             $this.jSend = config.jSend;
         }
@@ -53,15 +63,15 @@ export class BaseRequest {
             accept: 'application/json'
         };
         sendHeaders.forEach(function (header){
-            if($this.req.headers[header]) {
-                headers[header] = $this.req.headers[header];
+            if($this.req.header(header)) {
+                headers[header] = $this.req.header(header);
             }
         });
 
         // If internal then forward all x- headers
         if(config.internal) {
             Object.keys($this.req.headers).forEach(function (header) {
-                if(header.indexOf('x-') !== -1 && !headers[header]) {
+                if(header.search(xHeaderRegex) !== -1 && !headers[header]) {
                     headers[header] = $this.req.headers[header];
                 }
             });
@@ -69,17 +79,13 @@ export class BaseRequest {
 
         // Join cookies
         var cookies = [];
-        var cookieMap = {};
-        if($this.req.headers.cookie) {
-            $this.req.headers.cookie.split(';').map(function (str) {
-                var arr = str.replace(/^\s/g, '').split('=');
-                cookieMap[arr[0]] = arr[1];
-            });
-            sendCookies.forEach(function (cookieName) {
-                if(cookieMap[cookieName]) {
-                    cookies.push(cookieName + '=' + cookieMap[cookieName]);
-                }
-            });
+        var cookieTemp;
+        if($this.req.headers.cookie && sendCookieRegex) {
+            cookieTemp = ' ' + $this.req.headers.cookie.replace(semiRegex, '; ') + ';';
+            cookies = cookieTemp.match(sendCookieRegex);
+            if(cookies) {
+                headers.cookie = cookies.join(' ');
+            }
             headers.cookie = cookies.join('; ');
         }
 
@@ -120,34 +126,21 @@ export class BaseRequest {
         }
 
         // Forward cookies so we can use with old portal unless we have already set headers
-        if($this.replyCookies.length && response.headers['set-cookie'] && !$this.req.res._emittedHeader){
+        if($this.replyCookieRegex && response.headers['set-cookie'] && !$this.req.res.headerSent){
+            var currentSetCookie = $this.req.res.getHeader('set-cookie');
+            var haveToSet = false;
             response.headers['set-cookie'].forEach(function (header) {
-                var optsArr = header.split('; ');
-                var keyValArr = optsArr.shift().split('=');
-                if($this.replyCookies.indexOf(keyValArr[0]) === -1) {
+                if(!header.test($this.replyCookieRegex)) {
                     return;
                 }
-                var opts:any = {};
-                optsArr.forEach(function (val) {
-                    if(val === 'HttpOnly') {
-                        opts.httpOnly = true;
-                        return;
-                    }
-                    var arr = val.split('=');
-                    var key = arr[0].toLowerCase();
-                    if(key === 'max-age') {
-                        opts.maxAge = arr[1] * 1000;
-                        return;
-                    }
-                    if(key === 'expires') {
-                        opts.expires = new Date(arr[1]);
-                        return;
-                    }
-                    opts[key] = arr[1];
-                });
-
-                $this.req.res.cookie(keyValArr[0], decodeURIComponent(keyValArr[1]), opts);
+                if(currentSetCookie.indexOf(header) === -1) {
+                    haveToSet = true;
+                    currentSetCookie.unshift(header);
+                }
             });
+            if(haveToSet) {
+                $this.req.res.setHeader('set-cookie', currentSetCookie);
+            }
         }
 
         if(typeof body === 'string') {
@@ -207,11 +200,13 @@ export class BaseRequest {
 
         opts.method = type;
         if(opts.params) {
-            Object.keys(opts.params).forEach(function (param) {
-                opts.url = opts.url.replace(new RegExp('\:' + param), opts.params[param]);
+            var regex = new RegExp('\:' + Object.keys(opts.params).join('|') + '(\/|$)', 'g');
+            opts.url = opts.url.replace(regex, function (match, param, dash) {
+                return opts.params[param] + dash;
             });
             delete opts.params;
         }
+
         return {
             opts: opts,
             cb: cb
