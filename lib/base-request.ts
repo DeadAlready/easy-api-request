@@ -86,7 +86,6 @@ export class BaseRequest {
             if(cookies) {
                 headers.cookie = cookies.join(' ');
             }
-            headers.cookie = cookies.join('; ');
         }
 
         // Clone options
@@ -130,7 +129,7 @@ export class BaseRequest {
             var currentSetCookie = $this.req.res.getHeader('set-cookie');
             var haveToSet = false;
             response.headers['set-cookie'].forEach(function (header) {
-                if(!header.test($this.replyCookieRegex)) {
+                if(!$this.replyCookieRegex.test(header)) {
                     return;
                 }
                 if(currentSetCookie.indexOf(header) === -1) {
