@@ -128,6 +128,11 @@ export class BaseRequest {
         if($this.replyCookieRegex && response.headers['set-cookie'] && !$this.req.res.headerSent){
             var currentSetCookie = $this.req.res.getHeader('set-cookie') || [];
 
+            //Force currentSetCookie to array
+            if(!Array.isArray(currentSetCookie)) {
+                currentSetCookie = [currentSetCookie]
+            }
+
             var haveToSet = false;
             response.headers['set-cookie'].forEach(function (header) {
                 if(!$this.replyCookieRegex.test(header)) {
