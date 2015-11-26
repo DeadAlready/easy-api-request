@@ -45,7 +45,7 @@ export class BaseRequest {
         $this.cleanLogData = config.cleanLogData || cleanLogData;
         var replyCookies = config.replyCookies || [];
         if(replyCookies.length) {
-            $this.replyCookieRegex = new RegExp('^(' + replyCookies.join('|') + ')=');
+            $this.replyCookieRegex = new RegExp('^[\s]*(' + replyCookies.join('|') + ')=');
         }
 
         var sendHeaders = config.headers || [];
@@ -71,7 +71,7 @@ export class BaseRequest {
         // If internal then forward all x- headers
         if(config.internal) {
             Object.keys($this.req.headers).forEach(function (header) {
-                if(header.search(xHeaderRegex) !== -1 && !headers[header]) {
+                if(xHeaderRegex.test(header) && !headers[header]) {
                     headers[header] = $this.req.headers[header];
                 }
             });
@@ -126,7 +126,8 @@ export class BaseRequest {
 
         // Forward cookies so we can use with old portal unless we have already set headers
         if($this.replyCookieRegex && response.headers['set-cookie'] && !$this.req.res.headerSent){
-            var currentSetCookie = $this.req.res.getHeader('set-cookie');
+            var currentSetCookie = $this.req.res.getHeader('set-cookie') || [];
+
             var haveToSet = false;
             response.headers['set-cookie'].forEach(function (header) {
                 if(!$this.replyCookieRegex.test(header)) {
