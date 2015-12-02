@@ -206,8 +206,8 @@ export class BaseRequest {
         opts.method = type;
         if(opts.params) {
             var regex = new RegExp('\:' + Object.keys(opts.params).join('|') + '(\/|$)', 'g');
-            opts.url = opts.url.replace(regex, function (match, param, dash) {
-                return opts.params[param] + dash;
+            opts.url = opts.url.replace(regex, function (param, optionalDash) {
+                return opts.params[param.substr(1)] + optionalDash;
             });
             delete opts.params;
         }
